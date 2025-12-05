@@ -1,5 +1,4 @@
 #include <gb/gb.h>
-#include <gbdk/console.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include "snake.h"
