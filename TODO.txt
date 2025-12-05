@@ -1,0 +1,4 @@
+- Collision
+- Sound
+- Death Screen
+- Main screen -> diff bank ?
