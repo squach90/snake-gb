@@ -1,4 +1,2 @@
-- Collision
 - Sound
-- Death Screen
-- Main screen -> diff bank ?
+- Main screen
