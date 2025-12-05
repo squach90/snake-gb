@@ -267,8 +267,6 @@ void main() {
 
     fill_bkg_rect(0, 0, 20, 18, 0);
 
-    set_bkg_tile_xy(5, 5, 3);
-
     set_win_tile_xy(0, 0, 4);
     set_win_tile_xy(1, 0, 15);
 
