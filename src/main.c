@@ -117,7 +117,7 @@ void move(int direction) {
     // Collide Body
     for (UINT8 i = 0; i < snake_length; i++) {
         if (snake[i].x == new_headX && snake[i].y == new_headY) {
-            printf("SELF");
+            game_over();
             die = 1;
             return;
         }
