@@ -12,6 +12,7 @@
 #define UP    3
 #define DOWN  4
 
+
 UINT8 current_direction = RIGHT;
 
 // console_init();
@@ -79,6 +80,15 @@ void update_score() {
     prevScore = score;
 }
 
+void play_eat_sound() {
+    NR10_REG = 0x07;
+    NR11_REG = 0x40;
+    NR12_REG = 0xF3;
+    NR13_REG = 0x10;
+    NR14_REG = 0xC3;
+}
+
+
 void move(int direction) {
 
     if ((current_direction == LEFT  && direction == RIGHT) ||
@@ -108,7 +118,7 @@ void move(int direction) {
     UINT8 new_headY = headY;
 
     // Collide Border
-    if (new_headX >= 20 || new_headY >= 18) {
+    if (new_headX >= 20 || new_headY >= 17) {
         game_over();
         die = 1;
         return;
@@ -133,6 +143,8 @@ void move(int direction) {
 
     if (fruit.active && headX == fruit.x && headY == fruit.y) {
         score++;
+
+        play_eat_sound();
 
         snake[snake_length].x = snake[snake_length - 1].x;
         snake[snake_length].y = snake[snake_length - 1].y;
@@ -246,6 +258,12 @@ void restart_game() {
 
 
 void main() {
+    // --- INIT SOUND ---
+    NR52_REG = 0x80;  // Sound ON
+    NR50_REG = 0x77;  // Volume
+    NR51_REG = 0xFF;  // Enable all channels
+
+
     UINT8 key, prevA = 0;
     UINT8 frame = 0;
     UINT8 direction = 0;
@@ -267,13 +285,14 @@ void main() {
 
     fill_bkg_rect(0, 0, 20, 18, 0);
 
+    set_bkg_tile_xy(3, 3, 3);
+
     set_win_tile_xy(0, 0, 4);
     set_win_tile_xy(1, 0, 15);
 
     set_win_tile_xy(2, 0, digitTiles[0]);
     set_win_tile_xy(3, 0, digitTiles[0]);
     prevScore = 0;
-
 
     SHOW_BKG;
     DISPLAY_ON;
