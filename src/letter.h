@@ -10,7 +10,7 @@
   Compression          : None.
   Counter              : None.
   Tile size            : 8 x 8
-  Tiles                : 0 to 8
+  Tiles                : 0 to 13
 
   Palette colors       : None.
   SGB Palette          : None.
@@ -22,11 +22,13 @@
 
 */
 
-#define letters_tilesLen 9
 
 /* Bank of tiles. */
 #define LettersTilesBank 0
 /* Start of tile array. */
+
+#define letters_tilesLen 16
+
 extern unsigned char LettersTiles[];
 
 /* End of LETTER.H */

@@ -12,7 +12,6 @@
 #define UP    3
 #define DOWN  4
 
-
 UINT8 current_direction = RIGHT;
 
 // console_init();
@@ -21,6 +20,7 @@ void move(int direction);
 void update_score();
 void spawn_fruit();
 void game_over();
+void draw_Main_screen();
 
 typedef struct {
     UINT8 x, y;
@@ -38,7 +38,10 @@ Fruit fruit;
 UINT8 headX = 3, headY = 3;
 UINT8 score = 0, prevScore = 255;
 int speed = 7; // tiles/sec
-int die = 0; // 0 -> FALSE | 1 -> TRUE
+int die = 0;   // 0 -> FALSE | 1 -> TRUE
+int isMainScreen = 1;  // 0 -> FALSE | 1 -> TRUE
+
+int ppf = 1; // Point per fruit
 
 const UINT8 digitTiles[10] = {5, 6, 7, 8, 9, 10, 11, 12, 13, 14};
 
@@ -142,7 +145,7 @@ void move(int direction) {
     set_bkg_tile_xy(old_tail_x, old_tail_y, 0);
 
     if (fruit.active && headX == fruit.x && headY == fruit.y) {
-        score++;
+        score += ppf;
 
         play_eat_sound();
 
@@ -229,6 +232,63 @@ void draw_GO_screen() {
     set_bkg_tile_xy(12, 9, digitTiles[score % 10]); // ones
 }
 
+void draw_Main_screen() {
+    set_bkg_data(16, border_tilesLen, BorderTiles);
+    set_bkg_data(24, letters_tilesLen, LettersTiles);
+
+    set_bkg_tile_xy(3, 3, 18);
+    for(UINT8 x = 4; x <= 14; x++) set_bkg_tile_xy(x, 3, 20);
+    set_bkg_tile_xy(15, 3, 19);
+
+    set_bkg_tile_xy(5, 4, 31);  // S
+    set_bkg_tile_xy(6, 4, 33);  // N
+    set_bkg_tile_xy(7, 4, 25);  // A
+    set_bkg_tile_xy(8, 4, 34);  // K
+    set_bkg_tile_xy(9, 4, 27);  // E
+
+    set_bkg_tile_xy(11, 4, 2);  // Body
+    set_bkg_tile_xy(12, 4, 2);  // Body
+    set_bkg_tile_xy(13, 4, 3);  // Head
+
+    // BOTTOM
+    set_bkg_tile_xy(3, 5, 16);
+    for(UINT8 x = 4; x <= 14; x++) set_bkg_tile_xy(x, 5, 21);
+    set_bkg_tile_xy(15, 5, 17);
+
+
+    // LEFT
+    set_bkg_tile_xy(3, 4, 22);
+
+    // RIGHT (Fruit)
+    set_bkg_tile_xy(15, 4, 4);
+
+
+    set_bkg_tile_xy(4, 10, 38);   // P
+    set_bkg_tile_xy(5, 10, 30);   // R
+    set_bkg_tile_xy(6, 10, 27);   // E
+    set_bkg_tile_xy(7, 10, 31);   // S
+    set_bkg_tile_xy(8, 10, 31);   // S
+
+    set_bkg_tile_xy(10, 10, 31);  // S
+    set_bkg_tile_xy(11, 10, 39);  // T
+    set_bkg_tile_xy(12, 10, 25);  // A
+    set_bkg_tile_xy(13, 10, 30);  // R
+    set_bkg_tile_xy(14, 10, 39);  // T
+
+    set_bkg_tile_xy(3, 17, 4);    // Fruit
+
+    set_bkg_tile_xy(5, 17, 31);   // S
+    set_bkg_tile_xy(6, 17, 35);   // Q
+    set_bkg_tile_xy(7, 17, 36);   // U
+    set_bkg_tile_xy(8, 17, 25);   // A
+    set_bkg_tile_xy(9, 17, 32);   // C
+    set_bkg_tile_xy(10, 17, 37);  // H
+    set_bkg_tile_xy(11, 17, 14);  // 9
+    set_bkg_tile_xy(12, 17, 5);   // 0
+
+    set_bkg_tile_xy(14, 17, 4);   // Fruit
+}
+
 void restart_game() {
     // Reset variables
     snake_length = 1;
@@ -263,7 +323,6 @@ void main() {
     NR50_REG = 0x77;  // Volume
     NR51_REG = 0xFF;  // Enable all channels
 
-
     UINT8 key, prevA = 0;
     UINT8 frame = 0;
     UINT8 direction = 0;
@@ -277,11 +336,23 @@ void main() {
     UINT16 seed = 0;
     while (seed < 1000) seed++;
 
-    move_win(7, 136);  // 7: Correct Material Shift,   136: 144-8 -> to get a window 8bit tall
-    SHOW_WIN;
-
+    fill_bkg_rect(0, 0, 20, 18, 0);
     set_bkg_data(0, snake_tilesLen, SnakeTile);
     set_win_data(0, snake_tilesLen, SnakeTile);
+
+    SHOW_BKG;
+    DISPLAY_ON;
+
+    draw_Main_screen();
+
+    while(1) {
+        key = joypad();
+        if (key & J_START) break;  // START press => exit the loop
+        wait_vbl_done();
+    }
+
+    move_win(7, 136);  // 7: Correct Material Shift,   136: 144-8 -> to get a window 8bit tall
+    SHOW_WIN;
 
     fill_bkg_rect(0, 0, 20, 18, 0);
 
