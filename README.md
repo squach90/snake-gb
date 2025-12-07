@@ -96,11 +96,9 @@ The game uses custom tiles for:
 
 This project is released under the [Unlicense](./UNLICENSE).
 
-Created by [@squach90](https://github.com/squach90)
-
 Read more on [my blog](https://squach90.github.io)
 
-**Developed with ❤️ by Squach90**
+**Developed with ❤️ by [@squach90](https://github.com/squach90)**
 
 ---
 
