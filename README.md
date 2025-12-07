@@ -1,4 +1,4 @@
-# 🐍 Snake Game Boy
+# 🐍 Snake
 
 A classic Snake game developed in C with [GBDK-2020](https://github.com/gbdk-2020/gbdk-2020) for the Game Boy.
 
