@@ -87,7 +87,7 @@ The game uses custom tiles for:
 ## 🚀 Future Improvements
 
 - [ ] Saved high score
-- [ ] Additional Sprite for Fruit
+- [x] Additional Sprite for Fruit
 - [ ] Background music
 
 ## 👀 🫵 ⏭️ ⏰ ヾ(＾ ∇ ＾).

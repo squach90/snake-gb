@@ -2,11 +2,10 @@
 CTARGET = snake-c.gb
 
 # Source files
-C_SRC   = src/main.c src/snake.c src/border.c src/letter.c
+C_SRC   = src/main.c src/snake.c src/border.c src/letter.c src/fruits.c
 
 # SDCC tools
 LCC     = lcc
-
 
 # --------------------
 # C build

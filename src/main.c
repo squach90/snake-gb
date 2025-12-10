@@ -4,6 +4,7 @@
 #include "snake.h"
 #include "border.h"
 #include "letter.h"
+#include "fruits.h"
 
 // Direction: | 1:left | 2: right | 3:up | 4:down
 
@@ -20,7 +21,7 @@ void move(int direction);
 void update_score();
 void spawn_fruit();
 void game_over();
-void draw_Main_screen();
+int draw_Main_screen();
 
 typedef struct {
     UINT8 x, y;
@@ -40,6 +41,7 @@ UINT8 score = 0, prevScore = 255;
 int speed = 7; // tiles/sec
 int die = 0;   // 0 -> FALSE | 1 -> TRUE
 int isMainScreen = 1;  // 0 -> FALSE | 1 -> TRUE
+int FruitsSprite = 40; // 0 -> Base | 1 -> Strawberry | 2 -> Watermelon | 3 -> Corn
 
 int ppf = 1; // Point per fruit
 
@@ -73,7 +75,7 @@ void spawn_fruit() {
     fruit.y = y;
     fruit.active = 1;
 
-    set_bkg_tile_xy(fruit.x, fruit.y, 4);
+    set_bkg_tile_xy(fruit.x, fruit.y, FruitsSprite);
 }
 
 void update_score() {
@@ -232,9 +234,12 @@ void draw_GO_screen() {
     set_bkg_tile_xy(12, 9, digitTiles[score % 10]); // ones
 }
 
-void draw_Main_screen() {
+int draw_Main_screen() {
+    int S_fruit = 0;
+
     set_bkg_data(16, border_tilesLen, BorderTiles);
     set_bkg_data(24, letters_tilesLen, LettersTiles);
+    set_bkg_data(40, fruits_tilesLen, FruitsTiles);
 
     set_bkg_tile_xy(3, 3, 18);
     for(UINT8 x = 4; x <= 14; x++) set_bkg_tile_xy(x, 3, 20);
@@ -287,6 +292,46 @@ void draw_Main_screen() {
     set_bkg_tile_xy(12, 17, 5);   // 0
 
     set_bkg_tile_xy(14, 17, 4);   // Fruit
+
+    UINT8 last_key = 0;
+    int menu_opened = 0;
+
+    while(1) {
+        UINT8 key = joypad();
+
+        if (key & J_SELECT) {  // SELECT mode enabled
+            menu_opened = 1;
+            if ((key & J_RIGHT) && !(last_key & J_RIGHT)) {
+                S_fruit = (S_fruit + 1) % 3; // wrap 0-2
+            }
+
+            if ((key & J_LEFT) && !(last_key & J_LEFT)) {
+                S_fruit = (S_fruit + 2) % 3; // wrap 0-2
+            }
+
+            set_bkg_tile_xy(8, 13, 44);
+            set_bkg_tile_xy(9, 13, 40 + S_fruit);
+            set_bkg_tile_xy(10, 13, 43);
+
+        } else {
+            set_bkg_tile_xy(8, 13, 0);
+            set_bkg_tile_xy(9, 13, 0);
+            set_bkg_tile_xy(10, 13, 0);
+        }
+
+        if (key & (J_A | J_START)) {
+            break;
+        }
+
+        last_key = key;
+        wait_vbl_done();
+    }
+
+    if (!menu_opened) {
+        return 4;
+    } else {
+        return 40 + S_fruit;
+    }
 }
 
 void restart_game() {
@@ -343,11 +388,11 @@ void main() {
     SHOW_BKG;
     DISPLAY_ON;
 
-    draw_Main_screen();
+    FruitsSprite = draw_Main_screen();
 
     while(1) {
         key = joypad();
-        if (key & J_START) break;  // START press => exit the loop
+        if ((key & J_START) || (key & J_A)) break;  // START or A press => exit the loop
         wait_vbl_done();
     }
 
@@ -358,7 +403,7 @@ void main() {
 
     set_bkg_tile_xy(3, 3, 3);
 
-    set_win_tile_xy(0, 0, 4);
+    set_win_tile_xy(0, 0, FruitsSprite);
     set_win_tile_xy(1, 0, 15);
 
     set_win_tile_xy(2, 0, digitTiles[0]);
@@ -367,6 +412,7 @@ void main() {
 
     SHOW_BKG;
     DISPLAY_ON;
+
 
     update_score();
     spawn_fruit();
