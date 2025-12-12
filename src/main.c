@@ -1,6 +1,7 @@
 #include <gb/gb.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdint.h>
 #include "snake.h"
 #include "border.h"
 #include "letter.h"
@@ -15,7 +16,7 @@
 #define UP    3
 #define DOWN  4
 
-UINT8 current_direction = RIGHT;
+uint8_t current_direction = RIGHT;
 
 void move(int direction);
 void update_score(void);
@@ -28,20 +29,20 @@ void fade_out(void);
 void fade_in(void);
 
 typedef struct {
-    UINT8 x, y;
+    uint8_t x, y;
 } Segment;
 
 typedef struct {
-    UINT8 x, y, active;
+    uint8_t x, y, active;
 } Fruit;
 
 Segment snake[200];
-UINT8 snake_length = 1;
+uint8_t snake_length = 1;
 
 Fruit fruit;
 
-UINT8 headX = 3, headY = 3;
-UINT8 score = 0, prevScore = 255;
+uint8_t headX = 3, headY = 3;
+uint8_t score = 0, prevScore = 255;
 int speed = 7; // tiles/sec
 int die = 0;   // 0 -> FALSE | 1 -> TRUE
 int isMainScreen = 1;  // 0 -> FALSE | 1 -> TRUE
@@ -49,25 +50,25 @@ int FruitsSprite = 40; // 0 -> Base | 1 -> Strawberry | 2 -> Watermelon | 3 -> C
 
 int ppf = 1; // Point per fruit
 
-const UINT8 digitTiles[10] = {5, 6, 7, 8, 9, 10, 11, 12, 13, 14};
+const uint8_t digitTiles[10] = {5, 6, 7, 8, 9, 10, 11, 12, 13, 14};
 
-UINT16 rng_seed = 1;
+uint16_t rng_seed = 1;
 
-UINT8 gb_rand(UINT8 max) {
+uint8_t gb_rand(uint8_t max) {
     rng_seed = (rng_seed * 1103515245 + 12345) & 0xFFFF;
     return rng_seed % max;
 }
 
 void spawn_fruit(void) {
-    UINT8 x, y;
-    UINT8 collision;
+    uint8_t x, y;
+    uint8_t collision;
 
     do {
         collision = 0;
         x = gb_rand(20);
         y = gb_rand(17);
 
-        for(UINT8 i=0; i<snake_length; i++) {
+        for(uint8_t i=0; i<snake_length; i++) {
             if(snake[i].x == x && snake[i].y == y) {
                 collision = 1;
                 break;
@@ -109,11 +110,11 @@ void move(int direction) {
         current_direction = direction;
     }
 
-    UINT8 old_tail_x = snake[snake_length - 1].x;
-    UINT8 old_tail_y = snake[snake_length - 1].y;
+    uint8_t old_tail_x = snake[snake_length - 1].x;
+    uint8_t old_tail_y = snake[snake_length - 1].y;
 
     // Move body
-    for (UINT8 i = snake_length - 1; i > 0; i--) {
+    for (uint8_t i = snake_length - 1; i > 0; i--) {
         snake[i] = snake[i - 1];
     }
 
@@ -123,8 +124,8 @@ void move(int direction) {
     if (direction == UP)    headY--;
     if (direction == DOWN)  headY++;
 
-    UINT8 new_headX = headX;
-    UINT8 new_headY = headY;
+    uint8_t new_headX = headX;
+    uint8_t new_headY = headY;
 
     // Collide Border
     if (new_headX >= 20 || new_headY >= 17) {
@@ -134,7 +135,7 @@ void move(int direction) {
     }
 
     // Collide Body
-    for (UINT8 i = 0; i < snake_length; i++) {
+    for (uint8_t i = 0; i < snake_length; i++) {
         if (snake[i].x == new_headX && snake[i].y == new_headY) {
             game_over();
             die = 1;
@@ -164,7 +165,7 @@ void move(int direction) {
     }
 
     // body
-    for (UINT8 i = 1; i < snake_length; i++) {
+    for (uint8_t i = 1; i < snake_length; i++) {
         set_bkg_tile_xy(
             snake[i].x,
             snake[i].y,
@@ -179,15 +180,15 @@ void move(int direction) {
 void game_over(void) {
     DISPLAY_OFF;
     VBK_REG = 0;
-    for (UINT8 y = 0; y < 18; y++) {
-        for (UINT8 x = 0; x < 20; x++) {
+    for (uint8_t y = 0; y < 18; y++) {
+        for (uint8_t x = 0; x < 20; x++) {
             set_bkg_tile_xy(x, y, 0);
         }
     }
 
     HIDE_WIN;
 
-    for (UINT8 i = 0; i < 40; i++) {
+    for (uint8_t i = 0; i < 40; i++) {
         move_sprite(i, 0, 0);
     }
 
@@ -203,19 +204,19 @@ void draw_GO_screen(void) {
 
     // TOP
     set_bkg_tile_xy(3, 3, 18);
-    for(UINT8 x = 4; x <= 14; x++) set_bkg_tile_xy(x, 3, 20);
+    for(uint8_t x = 4; x <= 14; x++) set_bkg_tile_xy(x, 3, 20);
     set_bkg_tile_xy(15, 3, 19);
 
     // BOTTOM
     set_bkg_tile_xy(3, 13, 16);
-    for(UINT8 x = 4; x <= 14; x++) set_bkg_tile_xy(x, 13, 21);
+    for(uint8_t x = 4; x <= 14; x++) set_bkg_tile_xy(x, 13, 21);
     set_bkg_tile_xy(15, 13, 17);
 
     // LEFT
-    for(UINT8 y = 4; y <= 12; y++) set_bkg_tile_xy(3, y, 22);
+    for(uint8_t y = 4; y <= 12; y++) set_bkg_tile_xy(3, y, 22);
 
     // RIGHT
-    for(UINT8 y = 4; y <= 12; y++) set_bkg_tile_xy(15, y, 23);
+    for(uint8_t y = 4; y <= 12; y++) set_bkg_tile_xy(15, y, 23);
 
     set_bkg_tile_xy(5, 6, 24);  // G
     set_bkg_tile_xy(6, 6, 25);  // A
@@ -246,7 +247,7 @@ int draw_Main_screen(void) {
     set_bkg_data(40, fruits_tilesLen, FruitsTiles);
 
     set_bkg_tile_xy(3, 3, 18);
-    for(UINT8 x = 4; x <= 14; x++) set_bkg_tile_xy(x, 3, 20);
+    for(uint8_t x = 4; x <= 14; x++) set_bkg_tile_xy(x, 3, 20);
     set_bkg_tile_xy(15, 3, 19);
 
     set_bkg_tile_xy(5, 4, 31);  // S
@@ -261,7 +262,7 @@ int draw_Main_screen(void) {
 
     // BOTTOM
     set_bkg_tile_xy(3, 5, 16);
-    for(UINT8 x = 4; x <= 14; x++) set_bkg_tile_xy(x, 5, 21);
+    for(uint8_t x = 4; x <= 14; x++) set_bkg_tile_xy(x, 5, 21);
     set_bkg_tile_xy(15, 5, 17);
 
 
@@ -297,11 +298,11 @@ int draw_Main_screen(void) {
 
     set_bkg_tile_xy(14, 17, 4);   // Fruit
 
-    UINT8 last_key = 0;
+    uint8_t last_key = 0;
     int menu_opened = 0;
 
     while(1) {
-        UINT8 key = joypad();
+        uint8_t key = joypad();
 
         if (key & J_SELECT) {  // SELECT mode enabled
             menu_opened = 1;
@@ -395,9 +396,9 @@ void main(void) {
     NR50_REG = 0x77;  // Volume
     NR51_REG = 0xFF;  // Enable all channels
 
-    UINT8 key, prevA = 0;
-    UINT8 frame = 0;
-    UINT8 direction = 0;
+    uint8_t key, prevA = 0;
+    uint8_t frame = 0;
+    uint8_t direction = 0;
     int frames_per_move = 60 / speed;
 
     snake[0].x = headX;
