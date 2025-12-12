@@ -5,6 +5,8 @@
 #include "border.h"
 #include "letter.h"
 #include "fruits.h"
+#include "logo_map.h"
+#include "logo_set.h"
 
 // Direction: | 1:left | 2: right | 3:up | 4:down
 
@@ -15,13 +17,15 @@
 
 UINT8 current_direction = RIGHT;
 
-// console_init();
-
 void move(int direction);
-void update_score();
-void spawn_fruit();
-void game_over();
-int draw_Main_screen();
+void update_score(void);
+void spawn_fruit(void);
+void game_over(void);
+void draw_GO_screen(void);
+int draw_Main_screen(void);
+void restart_game(void);
+void fade_out(void);
+void fade_in(void);
 
 typedef struct {
     UINT8 x, y;
@@ -54,7 +58,7 @@ UINT8 gb_rand(UINT8 max) {
     return rng_seed % max;
 }
 
-void spawn_fruit() {
+void spawn_fruit(void) {
     UINT8 x, y;
     UINT8 collision;
 
@@ -78,14 +82,14 @@ void spawn_fruit() {
     set_bkg_tile_xy(fruit.x, fruit.y, FruitsSprite);
 }
 
-void update_score() {
+void update_score(void) {
     if(score == prevScore) return;
     set_win_tile_xy(2,0,digitTiles[score/10]); // tens
     set_win_tile_xy(3,0,digitTiles[score%10]); // ones
     prevScore = score;
 }
 
-void play_eat_sound() {
+void play_eat_sound(void) {
     NR10_REG = 0x07;
     NR11_REG = 0x40;
     NR12_REG = 0xF3;
@@ -172,7 +176,7 @@ void move(int direction) {
     set_bkg_tile_xy(headX, headY, 3);
 }
 
-void game_over() {
+void game_over(void) {
     DISPLAY_OFF;
     VBK_REG = 0;
     for (UINT8 y = 0; y < 18; y++) {
@@ -192,7 +196,7 @@ void game_over() {
     DISPLAY_ON;
 }
 
-void draw_GO_screen() {
+void draw_GO_screen(void) {
     // Load tileset
     set_bkg_data(16, border_tilesLen, BorderTiles);
     set_bkg_data(24, letters_tilesLen, LettersTiles);
@@ -234,7 +238,7 @@ void draw_GO_screen() {
     set_bkg_tile_xy(12, 9, digitTiles[score % 10]); // ones
 }
 
-int draw_Main_screen() {
+int draw_Main_screen(void) {
     int S_fruit = 0;
 
     set_bkg_data(16, border_tilesLen, BorderTiles);
@@ -334,7 +338,7 @@ int draw_Main_screen() {
     }
 }
 
-void restart_game() {
+void restart_game(void) {
     // Reset variables
     snake_length = 1;
     headX = 3;
@@ -361,8 +365,31 @@ void restart_game() {
     update_score();
 }
 
+void fade_out(void) {
+    for(int i = 0; i < 4; i++) {
+        switch(i) {
+            case 0: BGP_REG = 0xE4; break; // Normal
+            case 1: BGP_REG = 0xF9; break; // Darker
+            case 2: BGP_REG = 0xFE; break; // Very dark
+            case 3: BGP_REG = 0xFF; break; // Black
+        }
+        delay(100);
+    }
+}
 
-void main() {
+void fade_in(void) {
+    for(int i = 0; i < 4; i++) {
+        switch(i) {
+            case 0: BGP_REG = 0xFF; break; // Black
+            case 1: BGP_REG = 0xFE; break; // Very dark
+            case 2: BGP_REG = 0xF9; break; // Darker
+            case 3: BGP_REG = 0xE4; break; // Normal
+        }
+        delay(100);
+    }
+}
+
+void main(void) {
     // --- INIT SOUND ---
     NR52_REG = 0x80;  // Sound ON
     NR50_REG = 0x77;  // Volume
@@ -381,7 +408,28 @@ void main() {
     UINT16 seed = 0;
     while (seed < 1000) seed++;
 
+    // === Logo ===
+
     fill_bkg_rect(0, 0, 20, 18, 0);
+
+    set_bkg_data(0, TILESET_TILE_COUNT, TILESET);
+    set_bkg_tiles(4, 3, TILEMAP_WIDTH, TILEMAP_HEIGHT, TILEMAP);
+
+    SHOW_BKG;
+    DISPLAY_ON;
+
+    fade_in();
+
+    delay(2000);
+
+    fade_out();
+
+    BGP_REG = 0xE4; // Set BGP_REG to white to avoid black screen
+
+    // === Main Menu ===
+
+    fill_bkg_rect(0, 0, 20, 18, 0);
+
     set_bkg_data(0, snake_tilesLen, SnakeTile);
     set_win_data(0, snake_tilesLen, SnakeTile);
 
@@ -395,6 +443,8 @@ void main() {
         if ((key & J_START) || (key & J_A)) break;  // START or A press => exit the loop
         wait_vbl_done();
     }
+
+    fade_out();
 
     move_win(7, 136);  // 7: Correct Material Shift,   136: 144-8 -> to get a window 8bit tall
     SHOW_WIN;
@@ -413,6 +463,11 @@ void main() {
     SHOW_BKG;
     DISPLAY_ON;
 
+    delay(800);
+    fade_in();
+    BGP_REG = 0xE4; // Set BGP_REG to white to avoid black screen
+
+    // === Game ===
 
     update_score();
     spawn_fruit();
